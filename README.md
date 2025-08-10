@@ -56,7 +56,7 @@ Endpoint	Método	Descripción
 
 | Lista de tareas | Agregar tarea | Editar tarea |
 |-----------------|---------------|--------------|
-| ![](docs/img/lista.png) | ![](docs/img/agregar.png) | ![](docs/img/editar.png) |
+| ![](./docs/img/login.jpeg) | ![](./docs/img/register.jpeg) | ![](./docs/img/main-dashboard.jpeg) | ![](./docs/img/form-add-task.jpeg) | ![](./docs/img/form-edit-task.jpeg) | ![](./docs/img/delete-task-confirmation.jpeg) | ![](./docs/img/main-dashboard2.jpeg) |
 
 ---
 
