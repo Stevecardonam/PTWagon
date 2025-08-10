@@ -11,7 +11,7 @@ flutter pub get#!/bin/sh
 cd mobile
 
 # Clona la versión de Flutter recomendada para el Dart SDK
-git clone https://github.com/flutter/flutter.git -b 3.22.8 --depth 1
+git clone https://github.com/flutter/flutter.git -b 3.32.8 --depth 1
 
 # Exporta el path del SDK para que el shell lo reconozca
 export PATH="$PATH:`pwd`/flutter/bin"
