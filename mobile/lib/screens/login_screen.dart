@@ -11,46 +11,50 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  final _formKey = GlobalKey<FormState>();
+
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final AuthService _authService = AuthService();
+
   bool _loading = false;
+  bool _obscurePassword = true;
 
   void _login() async {
+    if (!_formKey.currentState!.validate()) return;
+
     setState(() => _loading = true);
-    if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("Email y contraseña no pueden estar vacíos")),
-    );
-    setState(() => _loading = false);
-    return;
+
+    try {
+      await _authService.login(
+        _emailController.text,
+        _passwordController.text,
+      );
+
+      if (!mounted) return;
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const TaskScreen()),
+      );
+    } on ServerException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.message)),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString())),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _loading = false);
+      }
+    }
   }
-
-  try {
-    final res = await _authService.login(
-      _emailController.text,
-      _passwordController.text,
-    );
-    print("Login exitoso: $res");
-
-    if (!mounted) return;
-
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (_) => TaskScreen()),
-    );
-  } catch (e) {
-
-    if (!mounted) return;
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(e.toString())),
-    );
-  }
-
-   if (!mounted) return;
-  setState(() => _loading = false);
-}
 
   @override
   Widget build(BuildContext context) {
@@ -81,51 +85,79 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               child: Padding(
                 padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Icon(Icons.task_alt, size: 80, color: primary),
-                    const SizedBox(height: 20),
-                    Text(
-                      "Bienvenido",
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.headlineMedium
-                          ?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: primary,
-                          ),
-                    ),
-                    const SizedBox(height: 20),
-                    TextField(
-                      controller: _emailController,
-                      decoration: const InputDecoration(labelText: "Email"),
-                    ),
-                    const SizedBox(height: 15),
-                    TextField(
-                      controller: _passwordController,
-                      decoration: const InputDecoration(
-                        labelText: "Contraseña",
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Icon(Icons.task_alt, size: 80, color: primary),
+                      const SizedBox(height: 20),
+                      Text(
+                        "Bienvenido",
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: primary,
+                            ),
                       ),
-                      obscureText: true,
-                    ),
-                    const SizedBox(height: 20),
-                    _loading
-                        ? const Center(child: CircularProgressIndicator())
-                        : ElevatedButton(
-                            onPressed: _login,
-                            child: const Text("Iniciar Sesión"),
+                      const SizedBox(height: 20),
+                      TextFormField(
+                        controller: _emailController,
+                        decoration: const InputDecoration(labelText: "Email"),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'El email es obligatorio.';
+                          }
+                          final emailRegExp = RegExp(r'^[^@]+@[^@]+\.[^@]+');
+                          if (!emailRegExp.hasMatch(value)) {
+                            return 'Por favor, ingresa un email válido.';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 15),
+                      TextFormField(
+                        controller: _passwordController,
+                        obscureText: _obscurePassword,
+                        decoration: InputDecoration(
+                          labelText: "Contraseña",
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _obscurePassword = !_obscurePassword;
+                              });
+                            },
                           ),
-                    const SizedBox(height: 10),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (_) => RegisterScreen()),
-                        );
-                      },
-                      child: const Text("¿No tienes cuenta? Regístrate"),
-                    ),
-                  ],
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'La contraseña es obligatoria.';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 20),
+                      _loading
+                          ? const Center(child: CircularProgressIndicator())
+                          : ElevatedButton(
+                              onPressed: _login,
+                              child: const Text("Iniciar Sesión"),
+                            ),
+                      const SizedBox(height: 10),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const RegisterScreen()),
+                          );
+                        },
+                        child: const Text("¿No tienes cuenta? Regístrate"),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
