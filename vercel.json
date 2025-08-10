@@ -5,7 +5,7 @@
       "use": "@vercel/static-build",
       "config": {
         "root": "mobile",
-        "installCommand": "npm install",
+        "installCommand": "flutter pub get",
         "buildCommand": "flutter build --web-renderer=canvaskit --release",
         "outputDirectory": "build/web"
       }
@@ -14,7 +14,7 @@
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "mobile/build/web/index.html"
+      "dest": "mobile/build/web"
     }
   ]
 }
