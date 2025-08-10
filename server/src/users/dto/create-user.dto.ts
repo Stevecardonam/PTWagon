@@ -12,12 +12,15 @@ import {
 } from 'class-validator';
 
 export class CreateUserDto {
+  @ApiProperty({ example: 'John' })
+  @IsNotEmpty()
   @IsNotEmpty()
   @IsString()
   @MinLength(3)
   @MaxLength(80)
   name: string;
 
+  @ApiProperty({ example: 'Perez' })
   @IsNotEmpty()
   @IsString()
   @MinLength(3)

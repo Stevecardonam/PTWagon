@@ -8,10 +8,10 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   const swaggerConfig = new DocumentBuilder()
-    .setTitle('PI BackendEcommerce')
+    .setTitle('Task APi')
     .setVersion('1.0.0')
     .setDescription(
-      'Esta es la documentación de mi proyecto individual de Henry',
+      'Esta es la documentación del proyecto Gestor de Tareas, el cual es la prueba técnica para la empresa Wagon.',
     )
     .addBearerAuth()
     .build();
