@@ -1,0 +1,19 @@
+{
+  "builds": [
+    {
+      "src": "mobile/pubspec.yaml",
+      "use": "@napi-rs/vercel-action@2",
+      "config": {
+        "root": "mobile",
+        "build-command": "flutter build --web-renderer=canvaskit --release",
+        "output-directory": "build/web"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "mobile/build/web"
+    }
+  ]
+}
