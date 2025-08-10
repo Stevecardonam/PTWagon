@@ -41,7 +41,7 @@ class _TaskScreenState extends State<TaskScreen> {
     if (_titleController.text.isEmpty || _descriptionController.text.isEmpty) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Title and description cannot be empty")),
+        const SnackBar(content: Text("El título y la descripción no pueden estar vacíos")),
       );
       return;
     }
@@ -58,10 +58,15 @@ class _TaskScreenState extends State<TaskScreen> {
       if (!mounted) return;
       Navigator.of(context).pop();
       _fetchTasks();
+      } on ApiException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.message)),
+      );
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString())),
+        SnackBar(content: Text("Ocurrió un error inesperado: ${e.toString()}")),
       );
     }
   }
@@ -72,10 +77,15 @@ class _TaskScreenState extends State<TaskScreen> {
       if (!mounted) return;
       Navigator.of(context).pop();
       _fetchTasks();
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.message)), // <-- Aquí se muestra solo el mensaje
+      );
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString())),
+        SnackBar(content: Text("Ocurrió un error inesperado: ${e.toString()}")),
       );
     }
   }
@@ -88,12 +98,42 @@ class _TaskScreenState extends State<TaskScreen> {
         const SnackBar(content: Text("Tarea eliminada exitosamente")),
       );
       _fetchTasks();
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.message)), // <-- Aquí se muestra solo el mensaje
+      );
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString())),
+        SnackBar(content: Text("Ocurrió un error inesperado: ${e.toString()}")),
       );
     }
+  }
+
+   void _confirmDeleteTask(String id) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Confirmar Eliminación"),
+          content: const Text("¿Está seguro que desea eliminar esta tarea?"),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(), // Cierra el diálogo
+              child: const Text("No"),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Cierra el diálogo
+                _deleteTask(id); // Llama a la función para eliminar la tarea
+              },
+              child: const Text("Sí"),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   void _logout() async {
@@ -102,6 +142,31 @@ class _TaskScreenState extends State<TaskScreen> {
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (_) => const LoginScreen()),
+    );
+  }
+
+   void _confirmLogout() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Confirmar Cierre de Sesión"),
+          content: const Text("¿Está seguro que desea cerrar sesión?"),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text("No"),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _logout();
+              },
+              child: const Text("Sí"),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -176,11 +241,11 @@ class _TaskScreenState extends State<TaskScreen> {
                         labelText: "Estado",
                         border: OutlineInputBorder(),
                       ),
-                      items: <String>['PENDING', 'COMPLETED', 'CANCELLED']
+                      items: <String>['PENDING', 'COMPLETED']
                           .map<DropdownMenuItem<String>>((String value) {
                         return DropdownMenuItem<String>(
                           value: value,
-                          child: Text(value),
+                          child: Text(value == 'PENDING' ? 'Pendiente' : 'Completada'),
                         );
                       }).toList(),
                       onChanged: (String? newValue) {
@@ -231,7 +296,7 @@ class _TaskScreenState extends State<TaskScreen> {
           ),
           IconButton(
             icon: const Icon(Icons.logout),
-            onPressed: _logout,
+            onPressed: _confirmLogout,
           ),
         ],
       ),
@@ -272,17 +337,15 @@ class _TaskScreenState extends State<TaskScreen> {
               final tasks = snapshot.data!;
               final pendingTasks = tasks.where((t) => t['status'] == 'PENDING').toList();
               final completedTasks = tasks.where((t) => t['status'] == 'COMPLETED').toList();
-              final cancelledTasks = tasks.where((t) => t['status'] == 'CANCELLED').toList();
 
               return SingleChildScrollView(
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   children: [
-                    _buildTaskList(context, "Pendientes", pendingTasks, primary, Icons.pending_actions),
+                    _buildTaskList(context, "Pendientes", pendingTasks, const Color.fromARGB(255, 58, 165, 61), Icons.pending_actions),
                     const SizedBox(height: 20),
-                    _buildTaskList(context, "Realizadas", completedTasks, Colors.green, Icons.check_circle),
-                    const SizedBox(height: 20),
-                    _buildTaskList(context, "Canceladas", cancelledTasks, Colors.red, Icons.cancel),
+                    _buildTaskList(context, "Realizadas", completedTasks, const Color.fromARGB(255, 175, 55, 47), Icons.check_circle),
+                  
                   ],
                 ),
               );
@@ -341,32 +404,43 @@ class _TaskScreenState extends State<TaskScreen> {
                   itemCount: tasks.length,
                   itemBuilder: (context, index) {
                     final task = tasks[index];
-                    return ListTile(
-                      title: Text(
-                        task['title'],
-                        style: TextStyle(
-                          decoration: task['status'] == 'COMPLETED'
-                              ? TextDecoration.lineThrough
-                              : TextDecoration.none,
-                          color: task['status'] == 'COMPLETED'
-                              ? Colors.grey
-                              : Colors.black,
+                    return Column(
+                      children: [
+                        ListTile(
+                          title: Text(
+                            task['title'],
+                            style: TextStyle(
+                              decoration: task['status'] == 'COMPLETED'
+                                  ? TextDecoration.lineThrough
+                                  : TextDecoration.none,
+                              color: task['status'] == 'COMPLETED'
+                                  ? Colors.grey
+                                  : Colors.black,
+                            ),
+                          ),
+                          subtitle: Text(task['description']),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.edit, color: Colors.blue),
+                                onPressed: () => _showEditTaskDialog(task),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.delete, color: Colors.red),
+                                onPressed: () => _confirmDeleteTask(task['id']),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                      subtitle: Text(task['description']),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            icon: const Icon(Icons.edit, color: Colors.blue),
-                            onPressed: () => _showEditTaskDialog(task),
+                        if (index < tasks.length - 1)
+                          const Divider(
+                            height: 1,
+                            thickness: 1,
+                            indent: 16,
+                            endIndent: 16,
                           ),
-                          IconButton(
-                            icon: const Icon(Icons.delete, color: Colors.red),
-                            onPressed: () => _deleteTask(task['id']),
-                          ),
-                        ],
-                      ),
+                      ],
                     );
                   },
                 ),
