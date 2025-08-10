@@ -43,19 +43,19 @@ La aplicación permite:
 🛠️ Endpoints de la API
 La aplicación se comunica con un backend a través de los siguientes endpoints para gestionar las tareas.
 
-Endpoint	Método	Descripción
-/auth/register	POST	Registra un nuevo usuario.
-/auth/login	POST	Autentica a un usuario y devuelve un token JWT.
-/tasks	GET	Obtiene todas las tareas del usuario autenticado.
-/tasks	POST	Crea una nueva tarea.
-/tasks/:id	PUT	Actualiza una tarea existente por su ID.
-/tasks/:id	DELETE	Elimina una tarea por su ID.
+- Endpoint	Método	Descripción
+- /auth/register	POST	Registra un nuevo usuario.
+- /auth/login	POST	Autentica a un usuario y devuelve un token JWT.
+- /tasks	GET	Obtiene todas las tareas del usuario autenticado.
+- /tasks	POST	Crea una nueva tarea.
+- /tasks/:id	PUT	Actualiza una tarea existente por su ID.
+- /tasks/:id	DELETE	Elimina una tarea por su ID.
 
 ---
 ## 📱 Capturas de pantalla
 
-| Lista de tareas | Agregar tarea | Editar tarea |
-|-----------------|---------------|--------------|
+| Login | Register | Dashboard | Add Task | Edit Task | Delete Task | Main Dashboard |
+|-----------------|---------------|--------------|--------------|--------------|--------------|--------------|
 | ![](./docs/img/login.jpeg) | ![](./docs/img/register.jpeg) | ![](./docs/img/main-dashboard.jpeg) | ![](./docs/img/form-add-task.jpeg) | ![](./docs/img/form-edit-task.jpeg) | ![](./docs/img/delete-task-confirmation.jpeg) | ![](./docs/img/main-dashboard2.jpeg) |
 
 ---
