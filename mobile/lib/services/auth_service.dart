@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import '../utils/constants.dart';
+import '../config/api.dart';
 
 /// Traducciones centralizadas de mensajes de error del backend.
 const Map<String, String> _errorTranslations = {
@@ -25,7 +25,7 @@ class ServerException implements Exception {
 }
 
 class AuthService {
-  final String _authBaseUrl = "$apiBaseUrl/auth";
+  final String _authBaseUrl = "${ApiConfig.baseUrl}/auth";
 
   /// Método centralizado para procesar respuestas del servidor.
   dynamic _handleResponse(http.Response res) {
@@ -97,7 +97,9 @@ class AuthService {
       }),
     );
 
-    return _handleResponse(res);
+    final data = _handleResponse(res);
+    await _saveToken(data["access_token"]);
+    return data;
   }
 
   /// Obtiene el token almacenado.

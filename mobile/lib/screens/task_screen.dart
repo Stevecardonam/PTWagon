@@ -101,7 +101,7 @@ class _TaskScreenState extends State<TaskScreen> {
     } on ApiException catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.message)), // <-- Aquí se muestra solo el mensaje
+        SnackBar(content: Text(e.message)),
       );
     } catch (e) {
       if (!mounted) return;

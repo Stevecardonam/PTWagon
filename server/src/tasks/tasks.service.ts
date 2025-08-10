@@ -57,8 +57,22 @@ export class TasksService {
   ): Promise<Task> {
     const task = await this.findOne(id, user);
 
-    const updated = Object.assign(task, updateTaskDto);
-    return this.taskRepository.save(updated);
+    const { title } = updateTaskDto;
+
+    if (title) {
+      const existing = await this.taskRepository.findOne({
+        where: { title, user: { id: user.id } },
+      });
+
+      if (existing && existing.id !== task.id) {
+        throw new BadRequestException(
+          'You already have a task with this title',
+        );
+      }
+    }
+
+    Object.assign(task, updateTaskDto);
+    return this.taskRepository.save(task);
   }
 
   async remove(id: string, user: User): Promise<{ message: string }> {

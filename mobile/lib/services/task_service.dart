@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import '../utils/constants.dart';
+import '../config/api.dart';
 
 // Clase de excepción personalizada para manejar errores de la API.
 class ApiException implements Exception {
@@ -21,21 +21,21 @@ class TaskService {
   }
 
   void _handleError(http.Response res) {
-    // Si la respuesta no es exitosa, decodificamos el cuerpo del error.
     if (res.statusCode >= 400) {
       String errorMessage = "Ocurrió un error inesperado.";
       try {
         final errorData = jsonDecode(res.body);
         if (errorData.containsKey('message')) {
-          // El backend de NestJS puede devolver el mensaje como un String o una lista.
           if (errorData['message'] is List) {
             errorMessage = (errorData['message'] as List).join(', ');
           } else {
             errorMessage = errorData['message'] as String;
           }
+          if (errorMessage == 'You already have a task with this title') {
+            errorMessage = 'Ya tienes una tarea con este título.';
+          }
         }
       } catch (e) {
-        // En caso de que el cuerpo de la respuesta no sea JSON.
         errorMessage = "Error al decodificar la respuesta del servidor: ${res.body}";
       }
       throw ApiException(errorMessage, res.statusCode);
@@ -48,7 +48,7 @@ class TaskService {
     if (token == null) throw Exception("Token not found. Please log in.");
 
     final res = await http.post(
-      Uri.parse("$apiBaseUrl/tasks"),
+      Uri.parse("${ApiConfig.baseUrl}/tasks"),
       headers: {
         "Content-Type": "application/json",
         "Authorization": "Bearer $token",
@@ -71,7 +71,7 @@ class TaskService {
     if (token == null) throw Exception("Token not found. Please log in.");
 
     final res = await http.get(
-      Uri.parse("$apiBaseUrl/tasks"),
+      Uri.parse("${ApiConfig.baseUrl}/tasks"),
       headers: {
         "Content-Type": "application/json",
         "Authorization": "Bearer $token",
@@ -89,7 +89,7 @@ class TaskService {
   if (token == null) throw Exception("Token not found. Please log in.");
 
   final res = await http.put(
-    Uri.parse("$apiBaseUrl/tasks/$id"),
+    Uri.parse("${ApiConfig.baseUrl}/tasks/$id"),
     headers: {
       "Content-Type": "application/json",
       "Authorization": "Bearer $token",
@@ -110,7 +110,7 @@ class TaskService {
     if (token == null) throw Exception("Token not found. Please log in.");
 
     final res = await http.delete(
-      Uri.parse("$apiBaseUrl/tasks/$id"),
+      Uri.parse("${ApiConfig.baseUrl}/tasks/$id"),
       headers: {
         "Content-Type": "application/json",
         "Authorization": "Bearer $token",
