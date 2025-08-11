@@ -44,8 +44,8 @@ La aplicación permite:
 La aplicación se comunica con un backend a través de los siguientes endpoints para gestionar las tareas.
 
 - Endpoint	Método	Descripción
-- /auth/register	POST	Registra un nuevo usuario.
-- /auth/login	POST	Autentica a un usuario y devuelve un token JWT.
+- /auth/signup	POST	Registra un nuevo usuario.
+- /auth/signin	POST	Autentica a un usuario y devuelve un token JWT.
 - /tasks	GET	Obtiene todas las tareas del usuario autenticado.
 - /tasks	POST	Crea una nueva tarea.
 - /tasks/:id	PUT	Actualiza una tarea existente por su ID.
